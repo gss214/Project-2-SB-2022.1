@@ -2,12 +2,16 @@ section .data
 msg                     db 'Please input the number: '
 msgsize                 EQU $-msg
 msgFinal                db 'Your number is: '
-msgFinalsize            EQU $-msg
+msgFinalsize            EQU $-msgFinal
+neg_                    db '-'
+neg_size                EQU $-neg_
+newln                   db 0dH, 0aH
 
 section .bss
-number                  resd 1
+number                  resb 10
 result_str_int          resd 1
-result_int_str          resd 1
+result_int_str_reverse  resb 10
+result_int_str          resb 10
 result_int_str_size     resd 1
 
 section .text
@@ -30,25 +34,29 @@ _start:
         ;função de converter string para int
         push dword number
         call convert_str_2_int
-        ;mov eax, [result_str_int]
-        
-        ;função de converter int para string
-        push dword [result_str_int]
-        call convert_int_2_str
-        a:
-        mov eax, [result_int_str_size]
+  
         ; exibe a msg final na tela
         mov eax,4
         mov ebx,1
         mov ecx,msgFinal
         mov edx,msgFinalsize
         int 80h
+        
+        ;função de converter int para string
+        push dword [result_str_int]
+        call convert_int_2_str
 
         ; exibe a o numero digitado pelo usuario
         mov eax,4
         mov ebx,1
         mov ecx,result_int_str
         mov edx,[result_int_str_size]
+        int 80h
+
+        mov eax,4
+        mov ebx,1
+        mov ecx,newln
+        mov edx,2
         int 80h
 
         fimprog:
@@ -117,32 +125,65 @@ convert_int_2_str:
                 push edx
                 push esi
                 push edi
-                mov eax, [EBP+8]
-                mov esi, result_int_str
-                mov edi, 0 ;tamanho da string
-                ;mov ebx, [EBP+8] ; ebx = numero
-                loopint:
-                        ;faz a divisao do numero por 10, no eax fica o dividendo, no ecx fica o divisor
-                        mov edx, 0
-                        mov ecx, 10
-                        div ecx ;resultado da divisao: no eax fica o quociente no edx fica o resto e
-                        add edx, '0'
-                        mov [esi], edx ;move o que ta em edx para o conteudo de esi = result_int_str
-                        inc esi ; +1 no ponteiro result_int_str
-                        inc edi
-                        cmp eax, 0 ;compara se o numero é diferente de 0
-                        jne loopint
-                fim_convert_int_2_str:
-                        mov [esi], byte 0Dh
-                        inc edi
-                        mov [result_int_str_size], edi
-                        ;desempilha os registradores usado
-                        pop eax
-                        pop ebx
-                        pop ecx
-                        pop edx
-                        pop esi
-                        pop edi
-                        ;desempilha EBP
-                        pop EBP
-                        ret 4
+                mov eax, [EBP+8] ; valor
+                mov esi, result_int_str_reverse ; ponteiro para resultado
+                ;add esi, 10 ; pont
+                mov edi, 0; tamanho da string
+
+                cmp eax, 0
+                jge pos
+                ; print -
+                mov eax,4
+                mov ebx,1
+                mov ecx,neg_
+                mov edx,neg_size
+                int 80h
+                mov eax, [EBP+8] ; valor
+                ; transforma para positivo
+                imul eax, -1
+                jmp pos                
+pos: 
+                mov edx, 0
+                mov ecx, 10
+                div ecx
+                add edx, '0'
+                mov [esi], edx
+                inc esi
+                inc edi 
+                cmp eax, 0
+                jne pos 
+
+revert:
+                mov [result_int_str_size], edi
+                mov esi, result_int_str_reverse
+                mov edx, result_int_str
+                mov eax, 0
+
+loop1_reverse:
+                mov cl, [esi] ;pega o char
+                inc eax
+                cmp eax, edi ;compara final str
+                ja loop2_reverse 
+                inc esi 
+                jmp loop1_reverse
+loop2_reverse:
+                dec esi 
+                mov cl, [esi] ; pega o char
+                dec edi ; dec no tamanho
+                cmp edi, -1 ; compara se ta no inicio da sring
+                je fim_convert_int_2_str
+                mov [edx], byte cl ;salva o char no conteudo de esi
+                inc edx ; incrementa o ponteiro
+                jmp loop2_reverse
+
+fim_convert_int_2_str:
+                ;desempilha os registradores usado
+                pop eax
+                pop ebx
+                pop ecx
+                pop edx
+                pop esi
+                pop edi
+                ;desempilha EBP
+                pop EBP
+                ret 4
