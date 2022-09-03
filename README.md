@@ -4,9 +4,10 @@
 
 - [x] traduzir opcodes simples
 - [ ] section .data e .bss
-- [ ] numeros com sinal
 - [ ] multiplicacao e divisao
-- [ ] input e output
+- [x] input e output
+    - [ ] bytes lidos e escritos
+- [ ] s_input e s_output
 
 ## DORES
 
@@ -17,3 +18,9 @@
 - S_INPUT -> coloca pra .bss como vetor de byte
     - converte string pra num e declara no .data ?
 - SENAO -> declara no .data como const
+
+- no S_INPUT:
+    - declarar antes o label
+    - mov [qnt_loop_s_input], qnt
+    - fazer um loop da qnt
+    - call input  
