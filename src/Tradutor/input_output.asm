@@ -8,9 +8,11 @@ bytes_msg_2             db ' bytes', 0dH, 0ah
 bytes_msg_2_size        EQU $-bytes_msg_2
 
 section .bss
+label                   resd 5
 number                  resb 10
 number_of_bytes         resb 10
 result_str_int          resd 1
+result_aux_int          resd 1
 result_int_str_reverse  resb 10
 result_int_str          resb 10
 result_int_str_size     resd 1
@@ -22,14 +24,94 @@ _start:
         push 10
         push number
         call input
+        mov eax, [result_str_int]
+        mov [result_aux_int], eax
 
         ; output
-        push dword [result_str_int]
+        push dword [result_aux_int]
         call output
+
+        ; ; s_input
+        ; push 5
+        ; push label
+        ; call s_input
+
+        ; ; s_output
+        ; push 5
+        ; push label
+        ; call s_output
 
         mov eax, 1
         mov ebx, 0
         int 80h
+
+s_input:
+
+        ;criando a pilha local (frame de pilha)
+        push EBP
+        mov EBP,ESP
+
+        ;empilhando registradores que vão ser utilizados
+        pusha
+
+        sub esi, esi ; esi = 0 eh o indice
+
+loop_s_input:
+
+        ;chama input
+        push number
+        call input
+
+        mov edi, [EBP+8] ; edi = ponteiro pra label
+        mov ebx, [EBP+12] ; ebx = numero de iteracoes
+
+        mov eax, [result_str_int]
+        mov [edi+esi*4], eax ; edi[esi] = resultado da chamado do input
+        inc esi ; esi += 1
+
+        ; loop enquanto eax for menor que o numero de iteracoes
+        cmp esi, ebx
+        jl loop_s_input
+
+fim_s_input:
+
+        ; desempilha registradores
+        popa
+        pop EBP ;desempilha EBP
+        ret 4
+
+s_output:
+
+        ;criando a pilha local (frame de pilha)
+        push EBP
+        mov EBP,ESP
+
+        ;empilhando registradores que vão ser utilizados
+        pusha
+
+        sub esi, esi ; esi = 0 eh o indice
+
+loop_s_output:
+
+        mov edi, [EBP+8] ; edi = ponteiro pra label
+        mov ebx, [EBP+12] ; ebx = numero de iteracoes
+
+        ;chama output
+        push dword [edi+esi*4]
+        call output
+
+        inc esi
+
+        ; loop enquanto eax for menor que o numero de iteracoes
+        cmp esi, ebx
+        jl loop_s_output
+
+fim_s_output:
+
+        ; desempilha registradores
+        popa
+        pop EBP ;desempilha EBP
+        ret 4
 
 
 input:
@@ -38,16 +120,14 @@ input:
         mov EBP,ESP
 
         ;empilhando registradores que vão ser utilizados
-        push eax
-        push ebx
-        push ecx
+        pusha
 
 read_str:
         ; le o str
         mov eax, 3
         mov ebx, 0
         mov ecx, [EBP+8] ; ponteiro da lbl
-        mov edx, [EBP+12] ; tamanho
+        mov edx, 10 ; tamanho
         int 80h
 
         ;salva o n de bytes lidos em esi
@@ -63,6 +143,7 @@ read_str:
         ;exibe a qnt de bytes lidos
         push esi
         call convert_int_2_str
+        
         mov eax, 4
         mov ebx, 1 
         mov ecx, result_int_str
@@ -79,6 +160,7 @@ read_str:
 str_2_int:
         mov eax, 0 ; eax = valor total
         mov ebx, number ; ebx = numero
+
 loopchar: 
         movzx ecx, byte [ebx] ;carrega o char 
         inc ebx
@@ -108,9 +190,7 @@ ehneg?:
 fim_input:
         mov [result_str_int], eax ;move o resultado para result_str_int
         ;desempilha os registradores usado
-        pop eax
-        pop ebx
-        pop ecx
+        popa
         ;desempilha EBP
         pop EBP
         ret 4
@@ -120,18 +200,12 @@ output:
         push EBP
         mov EBP,ESP
 
-        mov eax, [ESP+8]
-        push dword [ESP+8]
-        call convert_int_2_str
-
         ;empilhando registradores que vão ser utilizados
-        push eax
-        push ebx
-        push ecx
-        push edx
-        push esi
-        push edi
+        pusha
 
+        mov eax, [EBP+8]
+        push dword [EBP+8]
+        call convert_int_2_str      
 
         mov eax, 4
         mov ebx, 1 
@@ -170,12 +244,7 @@ output:
         int 80h
 
         ;desempilha os registradores usado
-        pop eax
-        pop ebx
-        pop ecx
-        pop edx
-        pop esi
-        pop edi
+        popa
         ;desempilha EBP
         pop EBP
         ret 4
@@ -187,12 +256,13 @@ convert_int_2_str:
         mov EBP,ESP
 
         ;empilhando registradores que vão ser utilizados
-        push eax
-        push ebx
-        push ecx
-        push edx
-        push esi
-        push edi
+        ; push eax
+        ; push ebx
+        ; push ecx
+        ; push edx
+        ; push esi
+        ; push edi
+        pusha
 
         mov eax, [EBP+8] ; valor
         mov esi, result_int_str_reverse ; ponteiro para resultado
@@ -249,12 +319,7 @@ loop2_reverse:
 
 fim_convert_int_2_str:
         ;desempilha os registradores usado
-        pop eax
-        pop ebx
-        pop ecx
-        pop edx
-        pop esi
-        pop edi
+        popa
         ;desempilha EBP
         pop EBP
         ret 4

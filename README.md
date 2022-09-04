@@ -6,8 +6,8 @@
 - [ ] section .data e .bss
 - [ ] multiplicacao e divisao
 - [x] input e output
-    - [ ] bytes lidos e escritos
-- [ ] s_input e s_output
+- [x] s_input e s_output
+- [ ] retornar no eax a qtd de bytes lidos/escritos
 
 ## DORES
 
