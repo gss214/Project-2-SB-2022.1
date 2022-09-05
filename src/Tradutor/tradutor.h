@@ -7,7 +7,7 @@ vector<string> section_text;
 map<int, string> labels;
 
 void tradutor(string caminho_arq1){
-    vector<int> cod_objeto = ler_arquivo(caminho_arq1);
+    vector<int> cod_objeto = ler_arquivo(caminho_arq1); //{12, 13, 12, 14, 10, 13, 1, 14, 11, 15, 13, 15, 14, 0, 0, 0};//
     int cont_label = 1;
     int i = 0;
 
@@ -39,13 +39,14 @@ void tradutor(string caminho_arq1){
         cout << section_data[i] << endl;
     }
 
-    cout << "section .bss" << endl;
+    cout << "\nsection .bss" << endl;
     for (int i=0; i < section_bss.size(); i++){
         cout << section_bss[i] << endl;
     }
 
-    cout << "section .text" << endl;
+    cout << "\nsection .text" << endl;
+    cout << "global _start\n_start:" << endl;
     for (int i = 0; i < section_text.size(); i++){
-        cout << section_text[i] << endl;
+        cout << "\t" << section_text[i] << endl;
     }
 }

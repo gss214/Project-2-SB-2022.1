@@ -14,7 +14,7 @@ vector<int> ler_arquivo(string caminho_arq){
         string token;
         while (getline(iss, token, ' ')){
             token = token.c_str();
-            cod_objeto.push_back(stoi(token));
+            if(token[0] >= '0' and token[0] <= '9')cod_objeto.push_back(stoi(token));
         }
     }
     return cod_objeto;
@@ -38,7 +38,7 @@ int tamanho_instrucao(int opcode){
 void create_labels(map<int, string>& labels, int& cont_label, int opcode, vector<int> operandos, vector<string>& section_bss, vector<string>& section_data, vector<int>& cod_objeto){
     
     if(opcode == 15){
-        if(labels.find(operandos[0]) != labels.end()){
+        if(!labels.count(operandos[0])){
             labels[operandos[0]] = "label" + to_string(cont_label);
             cont_label++;
 
@@ -46,7 +46,7 @@ void create_labels(map<int, string>& labels, int& cont_label, int opcode, vector
         }
     }
     else if(opcode == 12){
-        if(labels.find(operandos[0]) != labels.end()){
+        if(!labels.count(operandos[0])){
             labels[operandos[0]] = "label" + to_string(cont_label);
             cont_label++;
 
@@ -54,7 +54,7 @@ void create_labels(map<int, string>& labels, int& cont_label, int opcode, vector
         }
     }
     else if(opcode != 14){
-        if(labels.find(operandos[0]) != labels.end()){
+        if(!labels.count(operandos[0])){
             labels[operandos[0]] = "label" + to_string(cont_label);
             cont_label++;
 
@@ -63,7 +63,7 @@ void create_labels(map<int, string>& labels, int& cont_label, int opcode, vector
     }
 
     if(opcode == 9){
-        if(labels.find(operandos[1]) != labels.end()){
+        if(!labels.count(operandos[1])){
             labels[operandos[1]] = "label" + to_string(cont_label);
             cont_label++;
 
@@ -176,7 +176,7 @@ vector<string> para_IA32(int opcode, string label1="", string label2="", int siz
         //STORE
         case 11:
         {
-            res.push_back("mov " + label1 + ", [EAX]");
+            res.push_back("mov dword " + label1 + ", [EAX]");
             break;    
         }
         
