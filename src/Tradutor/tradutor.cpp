@@ -10,5 +10,3 @@ int main(int argc, char *argv[]){
     tradutor(caminho_arq1);
     return 0;
 }
-
-// ./tradutor > out.txt

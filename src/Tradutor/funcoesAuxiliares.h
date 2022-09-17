@@ -5,6 +5,12 @@ using namespace std;
 
 map<string,int> opcodes = {{"ADD", 1}, {"SUB", 2}, {"MULT", 3}, {"DIV", 4}, {"JMP", 5}, {"JMPN", 6}, {"JMPP", 7}, {"JMPZ", 8}, {"COPY", 9}, {"LOAD", 10}, {"STORE", 11}, {"INPUT", 12}, {"OUTPUT", 13}, {"STOP", 14}, {"S_INPUT", 15}, {"S_OUTPUT", 16}};
 
+/**
+    Le um arquivo e retorna ele em um vetor de inteiros. 
+
+    @param caminho string contendo o caminho do arquivo de entrada.
+    @return um vetor de inteiros representando o codigo objeto.
+*/
 vector<int> ler_arquivo(string caminho_arq){
     ifstream file(caminho_arq);
     string str;
@@ -35,6 +41,17 @@ int tamanho_instrucao(int opcode){
     }
 }
 
+/**
+    Funcao responsavel por gerar as labels no tradução. 
+
+    @param labels.
+    @param cont_label.
+    @param opcode.
+    @param operandos.
+    @param section_bss.
+    @param section_data.
+    @param cod_objeto.
+*/
 void create_labels(map<int, string>& labels, int& cont_label, int opcode, vector<int> operandos, vector<string>& section_bss, vector<string>& section_data, vector<int>& cod_objeto){
     
     if(opcode == 15){
@@ -73,6 +90,11 @@ void create_labels(map<int, string>& labels, int& cont_label, int opcode, vector
     }
 }
 
+/**
+    Funcao responsavel por gerar o .data inicial. 
+
+    @return um vetor de strings contendo o .data inicial
+*/
 vector<string> var_data_aux(){
     vector<string> ret;
     ret.push_back("neg_                 db '-'");
@@ -86,6 +108,12 @@ vector<string> var_data_aux(){
     return ret;
 }
 
+
+/**
+    Funcao responsavel por gerar o .bss inicial. 
+
+    @return um vetor de strings contendo o .bss inicial
+*/
 vector<string> var_bss_aux(){
     vector<string> ret;
     ret.push_back("number                  resb 10");
@@ -98,6 +126,17 @@ vector<string> var_bss_aux(){
     return ret;
 }
 
+
+/**
+    Funcao responsavel pela conversao de um opcode do coidgo objeto para IA 32. 
+
+    @param label_jump
+    @param opcode
+    @param label1
+    @param label2
+    @param size
+    @return uma string com a instrucao traduzida
+*/
 // LEMBRAR DE COLOCAR DIRETIVA DE TAMANHO (WORD,BYTE...)
 string para_IA32(string label_jump, int opcode, string label1="", string label2="", int size=-1){
 

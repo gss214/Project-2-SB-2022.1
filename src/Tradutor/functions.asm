@@ -5,15 +5,20 @@ s_input:
         mov EBP,ESP
 
         ;empilhando registradores que vão ser utilizados
-        pusha
+        push ebx
+        push ecx
+        push esi
+        push edi
 
         sub esi, esi ; esi = 0 eh o indice
+        sub ecx, ecx ; n total de bytes
 
 loop_s_input:
 
         ;chama input
         push number
         call input
+        add ecx, eax
 
         mov edi, [EBP+8] ; edi = ponteiro pra label
         mov ebx, [EBP+12] ; ebx = numero de iteracoes
@@ -28,8 +33,12 @@ loop_s_input:
 
 fim_s_input:
 
+        mov eax, ecx ;n total de bytes
         ; desempilha registradores
-        popa
+        pop esi
+        pop edi
+        pop ecx
+        pop ebx
         pop EBP ;desempilha EBP
         ret 4
 
@@ -40,9 +49,13 @@ s_output:
         mov EBP,ESP
 
         ;empilhando registradores que vão ser utilizados
-        pusha
+        push ebx
+        push ecx
+        push esi
+        push edi
 
         sub esi, esi ; esi = 0 eh o indice
+        sub ecx, ecx ; n total de bytes
 
 loop_s_output:
 
@@ -52,6 +65,7 @@ loop_s_output:
         ;chama output
         push dword [edi+esi*4]
         call output
+        add ecx, eax
 
         inc esi
 
@@ -61,8 +75,12 @@ loop_s_output:
 
 fim_s_output:
 
+        mov eax, ecx ;n total de bytes
         ; desempilha registradores
-        popa
+        pop esi
+        pop edi
+        pop ecx
+        pop ebx
         pop EBP ;desempilha EBP
         ret 4
 
@@ -83,8 +101,8 @@ read_str:
         mov edx, 10 ; tamanho
         int 80h
 
-        ;salva o n de bytes lidos em esi
-        mov esi, eax
+        ;salva o n de bytes lidos
+        mov [number_of_bytes], eax
         
         ; exibe a msg "Foram lidos/escritos" 
         mov eax, 4
@@ -94,8 +112,9 @@ read_str:
         int 80h
 
         ;exibe a qnt de bytes lidos
-        push esi
+        push dword [number_of_bytes]
         call convert_int_2_str
+        mov eax, [result_int_str]
         
         mov eax, 4
         mov ebx, 1 
@@ -146,6 +165,7 @@ fim_input:
         popa
         ;desempilha EBP
         pop EBP
+        mov eax, [number_of_bytes]
         ret 4
 
 output:
@@ -159,6 +179,8 @@ output:
         mov eax, [EBP+8]
         push dword [EBP+8]
         call convert_int_2_str      
+        mov eax, [result_int_str_size]
+        mov [number_of_bytes], eax
 
         mov eax, 4
         mov ebx, 1 
@@ -200,6 +222,7 @@ output:
         popa
         ;desempilha EBP
         pop EBP
+        mov eax, [number_of_bytes]
         ret 4
 
 
@@ -209,12 +232,6 @@ convert_int_2_str:
         mov EBP,ESP
 
         ;empilhando registradores que vão ser utilizados
-        ; push eax
-        ; push ebx
-        ; push ecx
-        ; push edx
-        ; push esi
-        ; push edi
         pusha
 
         mov eax, [EBP+8] ; valor
@@ -266,7 +283,7 @@ loop2_reverse:
         dec edi ; dec no tamanho
         cmp edi, -1 ; compara se ta no inicio da sring
         je fim_convert_int_2_str
-        mov [edx], byte cl ;salva o char no conteudo de esi
+        mov [edx], byte cl ;salva o char no conteudo de edx
         inc edx ; incrementa o ponteiro
         jmp loop2_reverse
 
