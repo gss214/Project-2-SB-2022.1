@@ -1,5 +1,20 @@
-s_input:
+%macro read_str_macro 1
+mov eax, 3
+mov ebx, 0
+mov ecx, %1 ; ponteiro da lbl
+mov edx, 10 ; tamanho
+int 80h
+%endmacro
 
+%macro print_str_macro 2
+mov eax, 4
+mov ebx, 1 
+mov ecx, %1
+mov edx, %2
+int 80h
+%endmacro
+
+s_input:
         ;criando a pilha local (frame de pilha)
         push EBP
         mov EBP,ESP
@@ -14,11 +29,10 @@ s_input:
         sub ecx, ecx ; n total de bytes
 
 loop_s_input:
-
-        ;chama input
         push number
         call input
-        add ecx, eax
+        
+        add ecx, eax ; soma total de bytes lidos
 
         mov edi, [EBP+8] ; edi = ponteiro pra label
         mov ebx, [EBP+12] ; ebx = numero de iteracoes
@@ -32,18 +46,17 @@ loop_s_input:
         jl loop_s_input
 
 fim_s_input:
+        mov eax, ecx ;retorna o n de bytes lidos no eax
 
-        mov eax, ecx ;n total de bytes
         ; desempilha registradores
         pop esi
         pop edi
         pop ecx
         pop ebx
-        pop EBP ;desempilha EBP
+        pop EBP 
         ret 4
 
 s_output:
-
         ;criando a pilha local (frame de pilha)
         push EBP
         mov EBP,ESP
@@ -58,14 +71,14 @@ s_output:
         sub ecx, ecx ; n total de bytes
 
 loop_s_output:
-
         mov edi, [EBP+8] ; edi = ponteiro pra label
         mov ebx, [EBP+12] ; ebx = numero de iteracoes
 
         ;chama output
         push dword [edi+esi*4]
         call output
-        add ecx, eax
+
+        add ecx, eax ;soma o total de bytes escritos
 
         inc esi
 
@@ -74,14 +87,14 @@ loop_s_output:
         jl loop_s_output
 
 fim_s_output:
-
-        mov eax, ecx ;n total de bytes
+        mov eax, ecx ;retorna o n de bytes escritos no eax
+        
         ; desempilha registradores
         pop esi
         pop edi
         pop ecx
         pop ebx
-        pop EBP ;desempilha EBP
+        pop EBP 
         ret 4
 
 
@@ -90,45 +103,22 @@ input:
         push EBP
         mov EBP,ESP
 
-        ;empilhando registradores que vão ser utilizados
-        pusha
-
-read_str:
-        ; le o str
-        mov eax, 3
-        mov ebx, 0
-        mov ecx, [EBP+8] ; ponteiro da lbl
-        mov edx, 10 ; tamanho
-        int 80h
-
-        ;salva o n de bytes lidos
-        mov [number_of_bytes], eax
+        pusha ;empilhando registradores que vão ser utilizados
         
-        ; exibe a msg "Foram lidos/escritos" 
-        mov eax, 4
-        mov ebx, 1 
-        mov ecx, bytes_msg
-        mov edx, bytes_msg_size
-        int 80h
+        read_str_macro [EBP+8] ; le a str
 
-        ;exibe a qnt de bytes lidos
+        mov [number_of_bytes], eax ;salva o n de bytes lidos
+        
+        print_str_macro bytes_msg, bytes_msg_size ; exibe a msg "Foram lidos/escritos" 
+
+        ;converre o n de bytes int->str
         push dword [number_of_bytes]
         call convert_int_2_str
         mov eax, [result_int_str]
         
-        mov eax, 4
-        mov ebx, 1 
-        mov ecx, result_int_str
-        mov edx, [result_int_str_size]
-        int 80h
+        print_str_macro result_int_str, [result_int_str_size] ; exibe a qnt de bytes lidos
+        print_str_macro bytes_msg_2, bytes_msg_2_size ; exibe a msg " bytes"
         
-        ; exibe a msg " bytes" 
-        mov eax, 4
-        mov ebx, 1 
-        mov ecx, bytes_msg_2
-        mov edx, bytes_msg_2_size
-        int 80h
-
 str_2_int:
         mov eax, 0 ; eax = valor total
         mov ebx, number ; ebx = numero
@@ -161,11 +151,12 @@ ehneg?:
 
 fim_input:
         mov [result_str_int], eax ;move o resultado para result_str_int
+        
         ;desempilha os registradores usado
         popa
-        ;desempilha EBP
         pop EBP
-        mov eax, [number_of_bytes]
+
+        mov eax, [number_of_bytes] ;retorna o n de bytes lidos no eax
         ret 4
 
 output:
@@ -177,57 +168,34 @@ output:
         pusha
 
         mov eax, [EBP+8]
+
         push dword [EBP+8]
         call convert_int_2_str      
         mov eax, [result_int_str_size]
         mov [number_of_bytes], eax
 
-        mov eax, 4
-        mov ebx, 1 
-        mov ecx, result_int_str
-        mov edx, [result_int_str_size]
-        int 80h
+        print_str_macro result_int_str, [result_int_str_size] 
+        print_str_macro newln, 2 ; newln
 
-        mov eax, 4
-        mov ebx, 1 
-        mov ecx, newln
-        mov edx, 2
-        int 80h
-
-        ; exibe a msg "Foram lidos/escritos" 
-        mov eax, 4
-        mov ebx, 1 
-        mov ecx, bytes_msg
-        mov edx, bytes_msg_size
-        int 80h
-
+        print_str_macro bytes_msg, bytes_msg_size ; exibe a msg "Foram lidos/escritos" 
+        
+        ; converte int->str
         push dword [result_int_str_size]
         call convert_int_2_str
 
-        ; exibe a qnt de "bytes" 
-        mov eax, 4
-        mov ebx, 1 
-        mov ecx, result_int_str
-        mov edx, [result_int_str_size]
-        int 80h
-
-        ; exibe a msg " bytes" 
-        mov eax, 4
-        mov ebx, 1 
-        mov ecx, bytes_msg_2
-        mov edx, bytes_msg_2_size
-        int 80h
-
+        print_str_macro result_int_str, [result_int_str_size]; exibe a qnt de "bytes" 
+        print_str_macro bytes_msg_2, bytes_msg_2_size; exibe a msg " bytes" 
+        
         ;desempilha os registradores usado
         popa
-        ;desempilha EBP
         pop EBP
-        mov eax, [number_of_bytes]
+        
+        mov eax, [number_of_bytes] ;retorna o n de bytes escritos no eax
         ret 4
-
 
 ; função para converter o int para str, o resultado vai pra result_int_str
 convert_int_2_str:
+        ;criando a pilha local (frame de pilha)
         push EBP
         mov EBP,ESP
 
@@ -241,15 +209,11 @@ convert_int_2_str:
         cmp eax, 0
         jge pos
 
-        ; print -
-        mov eax,4
-        mov ebx,1
-        mov ecx,neg_
-        mov edx,neg_size
-        int 80h
+        print_str_macro neg_, neg_size; exibe o simbolo de negativo
+        
         mov eax, [EBP+8] ; valor
-        ; transforma para positivo
-        imul eax, -1            
+        
+        imul eax, -1 ; transforma para positivo
         inc edi    
 pos: 
         mov edx, 0
@@ -290,6 +254,5 @@ loop2_reverse:
 fim_convert_int_2_str:
         ;desempilha os registradores usado
         popa
-        ;desempilha EBP
         pop EBP
         ret 4
