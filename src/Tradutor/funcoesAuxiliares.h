@@ -44,13 +44,13 @@ int tamanho_instrucao(int opcode){
 /**
     Funcao responsavel por gerar as labels no tradução. 
 
-    @param labels.
-    @param cont_label.
-    @param opcode.
-    @param operandos.
-    @param section_bss.
-    @param section_data.
-    @param cod_objeto.
+    @param labels um mapa de inteiro e string representando as labels e o endereço.
+    @param cont_label ponteiro para inteiro representando a quantidade de labels que já foram registradas.
+    @param opcode inteiro representando o valor do opcode.
+    @param operandos vetor de inteiro representando o codigo objeto dos operandos de cada opcode.
+    @param section_bss vetor de string com os dados a serem escritos na section bss.
+    @param section_data vetor de string com os dados a serem escritos na section data.
+    @param cod_objeto um vetor de inteiros representando o codigo objeto do programa.
 */
 void create_labels(map<int, string>& labels, int& cont_label, int opcode, vector<int> operandos, vector<string>& section_bss, vector<string>& section_data, vector<int>& cod_objeto){
     
@@ -131,16 +131,15 @@ vector<string> var_bss_aux(){
 
 
 /**
-    Funcao responsavel pela conversao de um opcode do coidgo objeto para IA 32. 
+    Funcao responsavel pela conversao de um opcode do codigo objeto para IA 32. 
 
-    @param label_jump
-    @param opcode
-    @param label1
-    @param label2
-    @param size
+    @param label_jump string representando o nome da label.
+    @param opcode inteiro representando o opcode.
+    @param label1 parametro opcional representando o parametro 1 do opcode.
+    @param label2 parametro opcional string representando o parametro 2 do opcode.
+    @param size parametro opcional representando a quantidade de bytes passados nas instruções s_input e s_output.
     @return uma string com a instrucao traduzida
 */
-// LEMBRAR DE COLOCAR DIRETIVA DE TAMANHO (WORD,BYTE...)
 string para_IA32(string label_jump, int opcode, string label1="", string label2="", int size=-1){
 
     //vector<string> res;
@@ -276,6 +275,15 @@ string para_IA32(string label_jump, int opcode, string label1="", string label2=
     return res;
 }
 
+/**
+    Funcao auxiliar responsavel pela conversao de um opcode do codigo objeto para IA 32. 
+    @param opcode inteiro representando o opcode.
+    @param op1 inteiro representando o codigo objeto do primeiro operando.
+    @param op2 inteiro representando o codigo objeto do segundo operando.
+    @param labels um mapa de inteiro e string representando as labels e o endereço.
+    @param label_jump string representando o nome da label.
+    @return uma string com a instrucao traduzida
+*/
 string convert_to_IA32(int opcode, int op1, int op2, map<int,string>& labels, string label_jump){
     string res;
 

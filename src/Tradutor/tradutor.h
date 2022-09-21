@@ -1,6 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+/**
+    Funcao responsavel pela tradução de codigo objeto para IA 32. 
+    @param caminho_arq1 string representando o caminho do arquivo a ser traduzido.
+*/
 void tradutor(string caminho_arq1){
 
     vector<string> section_data;
@@ -9,7 +13,7 @@ void tradutor(string caminho_arq1){
     map<int, string> labels;
     map<int, string> flag_jump;
 
-    vector<int> cod_objeto = ler_arquivo(caminho_arq1); //{12, 13, 12, 14, 10, 13, 1, 14, 11, 15, 13, 15, 14, 0, 0, 0};//
+    vector<int> cod_objeto = ler_arquivo(caminho_arq1); 
     int cont_label = 1;
     int i = 0;
 
@@ -43,7 +47,6 @@ void tradutor(string caminho_arq1){
         if (opcode == 14)
             break;
     }
-
 
     string line;
     ifstream in_file{"functions.asm"};
