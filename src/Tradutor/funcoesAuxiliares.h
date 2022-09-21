@@ -59,7 +59,7 @@ void create_labels(map<int, string>& labels, int& cont_label, int opcode, vector
             labels[operandos[0]] = "label" + to_string(cont_label);
             cont_label++;
 
-            section_bss.push_back(labels[operandos[0]] + "\t\t resd " + to_string(operandos[1]));
+            section_bss.push_back(labels[operandos[0]] + "\t\t resb " + to_string(operandos[1]));
         }
     }
     else if(opcode == 12){
@@ -124,6 +124,7 @@ vector<string> var_bss_aux(){
     ret.push_back("result_int_str_reverse  resb 10");
     ret.push_back("result_int_str          resb 10");
     ret.push_back("result_int_str_size     resd 1");
+    ret.push_back("char                    resb 1");
 
     return ret;
 }

@@ -7,11 +7,11 @@
 ;Desenvolvido por: Guilherme Silva Souza e Maria Eduarda Machado de Holanda
 
 ;macro para ler uma string
-%macro read_str_macro 1
+%macro read_str_macro 2
 mov eax, 3
 mov ebx, 0
 mov ecx, %1 
-mov edx, 10 
+mov edx, %2 
 int 80h
 %endmacro
 
@@ -35,20 +35,22 @@ s_input:
         push esi
         push edi
 
-        sub esi, esi ; esi = 0 eh o indice
         sub ecx, ecx ; n total de bytes
 
 loop_s_input:
-        push number
-        call input
-        
-        add ecx, eax ; soma total de bytes lidos
+
+        ; le caracter
+        push ecx
+        read_str_macro char, 1
+        pop ecx
 
         mov edi, [EBP+8] ; edi = ponteiro pra label
         mov ebx, [EBP+12] ; ebx = numero de iteracoes
-
-        mov eax, [result_str_int]
-        mov [edi+esi*4], eax ; edi[esi] = resultado da chamado do input
+        
+        add ecx, eax ; soma total de bytes lidos
+        
+        mov eax, [char]
+        mov [edi+esi], eax ; edi[esi] = resultado da chamado do input
         inc esi ; esi += 1
 
         ; loop enquanto eax for menor que o numero de iteracoes
@@ -56,7 +58,19 @@ loop_s_input:
         jl loop_s_input
 fim_s_input:
         mov eax, ecx ;retorna o n de bytes lidos no eax
+        
+        push eax
+        print_str_macro bytes_msg, bytes_msg_size ; exibe a msg "Foram lidos/escritos" 
+        pop eax
 
+        ;converte o n de bytes int->str
+        push eax
+        call convert_int_2_str
+        mov eax, [result_int_str]
+        
+        print_str_macro result_int_str, [result_int_str_size] ; exibe a qnt de bytes lidos
+        print_str_macro bytes_msg_2, bytes_msg_2_size ; exibe a msg " bytes"
+      
         ; desempilha registradores
         pop esi
         pop edi
@@ -71,35 +85,34 @@ s_output:
         mov EBP,ESP
 
         ;empilhando registradores que vão ser utilizados
-        push ebx
         push ecx
-        push esi
-        push edi
 
-        sub esi, esi ; esi = 0 eh o indice
         sub ecx, ecx ; n total de bytes
-loop_s_output:
-        mov edi, [EBP+8] ; edi = ponteiro pra label
-        mov ebx, [EBP+12] ; ebx = numero de iteracoes
 
-        push dword [edi+esi*4]
-        call output
+        print_str_macro [EBP+8], [EBP+12] ; ponteiro para label e tamanho da label
+        mov ecx, eax ; total de bytes escritos
+        
+        push ecx
+        print_str_macro newln, 2
+        pop ecx
 
-        add ecx, eax ;soma o total de bytes escritos
-
-        inc esi
-
-        ; loop enquanto eax for menor que o numero de iteracoes
-        cmp esi, ebx
-        jl loop_s_output
 fim_s_output:
         mov eax, ecx ;retorna o n de bytes escritos no eax
         
+        push eax
+        print_str_macro bytes_msg, bytes_msg_size ; exibe a msg "Foram lidos/escritos" 
+        pop eax
+
+        ;converte o n de bytes int->str
+        push eax
+        call convert_int_2_str
+        mov eax, [result_int_str]
+        
+        print_str_macro result_int_str, [result_int_str_size] ; exibe a qnt de bytes lidos
+        print_str_macro bytes_msg_2, bytes_msg_2_size ; exibe a msg " bytes"
+                
         ; desempilha registradores
-        pop esi
-        pop edi
         pop ecx
-        pop ebx
         pop EBP 
         ret 4
 
@@ -110,7 +123,7 @@ input:
 
         pusha ;empilhando registradores que vão ser utilizados
         
-        read_str_macro [EBP+8] ; le a str
+        read_str_macro [EBP+8], 10 ; le a str
 
         mov [number_of_bytes], eax ;salva o n de bytes lidos
         
