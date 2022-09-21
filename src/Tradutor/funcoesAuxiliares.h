@@ -104,6 +104,8 @@ vector<string> var_data_aux(){
     ret.push_back("bytes_msg_size       EQU $-bytes_msg");
     ret.push_back("bytes_msg_2          db ' bytes', 0dH, 0ah");
     ret.push_back("bytes_msg_2_size     EQU $-bytes_msg_2");
+    ret.push_back("overflow_msg         db 'Overflow Detectado! O programa sera encerrado.', 0dH, 0ah");
+    ret.push_back("overflow_msg_size    EQU $-overflow_msg");
 
     return ret;
 }
@@ -162,6 +164,7 @@ string para_IA32(string label_jump, int opcode, string label1="", string label2=
         case 3:
             res += "mov ECX, [" + label1 + "]\n";
             res += "imul ECX\n";
+            res += "jo overflow\n";
             break;
         
         //DIV

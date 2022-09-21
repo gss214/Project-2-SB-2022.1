@@ -275,3 +275,9 @@ fim_convert_int_2_str:
         popa
         pop EBP
         ret 4
+
+overflow:
+        print_str_macro overflow_msg, overflow_msg_size
+        mov eax, 1
+        mov ebx, 0
+        int 80h
